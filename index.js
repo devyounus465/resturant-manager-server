@@ -28,13 +28,24 @@ async function run() {
     //   database collection
 
     const foodCollection = client.db("foodsDB").collection("foods");
-    const userCollection = client.db("foodUserDB").collection("foodUser");
-    const cartCollection = client.db("foodCartDB").collection("foodCart");
+    const userCollection = client.db("foodsDB").collection("foodUser");
+    const cartCollection = client.db("foodsDB").collection("foodCart");
+    const checkoutsCollection = client
+      .db("foodsDB")
+      .collection("foodCheckouts");
 
     //   all foods find
     app.get("/foods", async (req, res) => {
       const cursor = foodCollection.find();
       const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //   update product get
+    app.get("/foods/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: id };
+      const result = await foodCollection.findOne(query);
       res.send(result);
     });
 
@@ -68,6 +79,29 @@ async function run() {
       const result = await foodCollection.insertOne(newItem);
       res.send(result);
     });
+    app.put("/foods/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const filter = { _id: id };
+      const updateFood = req.body;
+      console.log(updateFood);
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name: updateFood.name,
+          image: updateFood.image,
+          price: updateFood.price,
+          madeby: updateFood.madeby,
+          madebyemail: updateFood.madebyemail,
+          quantity: updateFood.quantity,
+          category: updateFood.category,
+          origin: updateFood.origin,
+          description: updateFood.description,
+        },
+      };
+      const result = await foodCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
     // client site theke asa product cart add korte hobe
     app.post("/cart", async (req, res) => {
       const cartItem = req.body;
@@ -75,6 +109,23 @@ async function run() {
       const result = await cartCollection.insertOne(cartItem);
       res.send(result);
     });
+
+    //   cart food delete
+    app.delete("/cart/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: id };
+      const result = await cartCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    //   checkouts Collection
+    app.post("/checkouts", async (req, res) => {
+      const checkoutitem = req.body;
+      console.log(checkoutitem);
+      const result = await checkoutsCollection.insertOne(checkoutitem);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
