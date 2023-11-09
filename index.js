@@ -1,6 +1,7 @@
 const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
+
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -8,7 +9,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.jbprl6s.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -56,13 +57,6 @@ async function run() {
       res.send(result);
     });
 
-    // database a theka add kora  cart product gulo serverr a show korte hobe
-    app.get("/cart", async (req, res) => {
-      const cartdata = cartCollection.find();
-      const result = await cartdata.toArray();
-      res.send(result);
-    });
-
     //   food user pathabo database client site theja user info niye
 
     app.post("/users", async (req, res) => {
@@ -102,27 +96,32 @@ async function run() {
       const result = await foodCollection.updateOne(filter, updateDoc, options);
       res.send(result);
     });
-    // client site theke asa product cart add korte hobe
-    app.post("/cart", async (req, res) => {
-      const cartItem = req.body;
-
-      const result = await cartCollection.insertOne(cartItem);
-      res.send(result);
-    });
-
-    //   cart food delete
-    app.delete("/cart/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: id };
-      const result = await cartCollection.deleteOne(query);
-      res.send(result);
-    });
 
     //   checkouts Collection
     app.post("/checkouts", async (req, res) => {
       const checkoutitem = req.body;
       console.log(checkoutitem);
       const result = await checkoutsCollection.insertOne(checkoutitem);
+      res.send(result);
+    });
+
+    // database a theka add kora  cart product gulo serverr a show korte hobe
+    app.get("/cart", async (req, res) => {
+      const cartdata = cartCollection.find();
+      const result = await cartdata.toArray();
+      res.send(result);
+    });
+    // client site theke asa product cart add korte hobe
+    app.post("/cart", async (req, res) => {
+      const cartItem = req.body;
+      const result = await cartCollection.insertOne(cartItem);
+      res.send(result);
+    });
+    //   cart food delete
+    app.delete("/cart/:id", async (req, res) => {
+      const id = req.params.id;
+      const deleteId = { _id: new ObjectId(id) };
+      const result = await cartCollection.deleteOne(deleteId);
       res.send(result);
     });
 
